@@ -17,6 +17,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('sns', function (Request $request) {
+Route::post('sns', function (Request $request) {
     return $request->all();
 })->middleware(\Chelout\HttpLogger\Middlewares\HttpLogger::class);
