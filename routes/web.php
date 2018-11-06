@@ -30,75 +30,35 @@ Route::post('sns', function (Request $request) {
     // Validate the message and log errors if invalid.
     try {
         $validator->validate($message);
+
+        Log::info('SNS message is valid');
     } catch (InvalidSnsMessageException $e) {
         Log::error('SNS Message Validation Error: ' . $e->getMessage());
 
         abort(422, 'SNS Message Validation Error: ' . $e->getMessage());
     }
 
-    // Check the type of the message and handle the subscription.
-    if ($message['Type'] === 'SubscriptionConfirmation') {
-        // Confirm the subscription by sending a GET request to the SubscribeURL
-        file_get_contents($message['SubscribeURL']);
+    switch ($message['Type']) {
+        case 'SubscriptionConfirmation':
+            // Confirm the subscription by sending a GET request to the SubscribeURL
+            file_get_contents($message['SubscribeURL']);
+            
+            break;
+
+        case 'Notification':
+            // Do whatever you want with the message body and data.
+            // Log::info($message['MessageId'] . ': ' . $message['Message']);
+            Log::info(
+                json_encode($message)
+            );
+            
+            break;
+
+        case 'UnsubscribeConfirmation':
+            // Unsubscribed in error? You can resubscribe by visiting the endpoint
+            // provided as the message's SubscribeURL field.
+            file_get_contents($message['SubscribeURL']);
+            
+            break;
     }
-
-    if ($message['Type'] === 'Notification') {
-        // Do whatever you want with the message body and data.
-        echo $message['MessageId'] . ': ' . $message['Message'] . "\n";
-
-        Log::info($message['MessageId'] . ': ' . $message['Message']);
-     }
-
-    
-    // $message = Message::fromRawPostData();
-    
-    // // Validate the message
-    // $validator = new MessageValidator();
-    // $validator->validate($message);
-
-    // $body = $request->getContent();
-    
-    // Log::info($body);
-    
-    // $messageType = $request->header('x-amz-sns-message-type');
-    
-    // $payload = json_decode($body);
-
-    // switch ($messageType) {
-    //     case 'SubscriptionConfirmation':
-    //         $client = new Client();
-
-    //         // $type = $request->get('Type');
-    //         // $messageId = $request->get('MessageId');
-    //         // $token = $request->get('Token');
-    //         // $topicArn = $request->get('TopicArn');
-    //         // $message = $request->get('Message');
-    //         // $subscribeURL = $request->get('SubscribeURL');
-    //         // $timestamp = $request->get('Timestamp');
-    //         // $signatureVersion = $request->get('SignatureVersion');
-    //         // $signature = $request->get('Signature');
-    //         // $signingCertURL = $request->get('SigningCertURL');
-
-    //         $response = $client->get($payload->SubscribeURL);
-            
-    //         Log::info($response);
-            
-    //         // dd($response);
-
-    //         break;
-
-    //     case 'Notification':
-    //         # code...
-    //         break;
-
-    //     case 'UnsubscribeConfirmation':
-    //         # code...
-    //         break;
-            
-    //     default:
-    //         # code...
-    //         break;
-    // }
-
-    // return $request->all();
 })->middleware(\Chelout\HttpLogger\Middlewares\HttpLogger::class);
