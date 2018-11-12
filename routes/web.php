@@ -61,4 +61,5 @@ Route::post('sns', function (Request $request) {
             
             break;
     }
+    Log::info($message['Type']);
 })->middleware(\Chelout\HttpLogger\Middlewares\HttpLogger::class);
