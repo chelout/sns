@@ -49,7 +49,7 @@ return [
      */
     'git' => true,
 
-    'raw' => false,
+    'raw' => true,
     
     /*
      * false - don't log body fields
